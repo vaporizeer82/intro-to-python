@@ -83,7 +83,7 @@ def get_dx_dy_from_matrix(mat):
     origin = np.zeros(shape=(3,))
     origin[2] = 1.0
 
-    xy_one = mat @ origin
+    xy_one = origin @ mat
     return xy_one[0], xy_one[1]
 
 

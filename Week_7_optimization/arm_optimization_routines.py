@@ -80,11 +80,10 @@ def vector_to_goal(arm_with_angles, target):
     # TODO:
     #   Get the gripper/grasp location using get_gripper_location
     #   Calculate and return the vector
-    # BEGIN SOLUTION
-    end_pt = get_gripper_location(arm_with_angles)
+    grip_loc = get_gripper_location(arm_with_angles)
+    vector = target - grip_loc
 
-    return np.array(target) - np.array(end_pt)
-    # END SOLUTION
+    return vector
 
 
 def distance_to_goal(arm_with_angles, target):
@@ -99,11 +98,10 @@ def distance_to_goal(arm_with_angles, target):
     """
 
     # TODO: Call the function above, then return the vector's length
-    # BEGIN SOLUTION
-    vec = vector_to_goal(arm_with_angles, target)
+    vector = vector_to_goal(arm_with_angles, target)
+    distance = np.sqrt(vector[0]**2 + vector[1]**2)
 
-    return np.sqrt(vec[0] * vec[0] + vec[1] * vec[1])
-    # END SOLUTION
+    return distance
 
 
 def func_for_fmin(angles_from_fmin, arm, target):
@@ -120,11 +118,16 @@ def func_for_fmin(angles_from_fmin, arm, target):
     #  2: Use set_angles_of_arm_geometry to set the joint angles of the arm
     #  3: Return the distance to the target
     # See the angles_to_list helper function
-    # BEGIN SOLUTION
-    set_angles_of_arm_geometry(arm, angles_numpy_to_list(angles_from_fmin))
+
+    
+    #error here: 'numpy.float64' object is not iterable
+    angles_filled_in = angles_numpy_to_list(angles_from_fmin)
+
+    # this is the eq that we are optimizing/finding the min
+    set_angles_of_arm_geometry(arm, angles_filled_in)
+
+    
     return distance_to_goal(arm, target)
-    # END SOLUTION
-    return 0.0
 
 
 def do_fmin(angles_start, arm, target):
@@ -140,16 +143,17 @@ def do_fmin(angles_start, arm, target):
 
     # TODO:
     #  1. Set up the initial angles for fmin. This is either the arm link angles or the (optional) link angles plus
-    #  the wrist angle. Use the angles in angles_gripper_check
+    #  the wrist angle. Use the angles in angles_gripper_check (not sure where this is. throws error and cannot find list or funcion)
     #  2. Call fmin with those angles and func_for_fmin.
     #  3. There is an optional args parameter for fmin that works very similarly to the optional arguments we used
     #  in ode solve - this is how you will pass in the arm geometry and the target point
     #  4. Copy the angles returned from fmin into angles_ret
     #  See angles_to_list and list_to_angles helper functions
-    # BEGIN SOLUTION
-    angles_for_fmin = angles_list_to_numpy(angles_start)
-    angs_at_min = fmin(func_for_fmin, x0=angles_for_fmin, args=(arm, target))
-    angles_ret = angles_numpy_to_list(angs_at_min, angles_start[-1][1], angles_start[-1][2])
-    # END SOLUTION
+
+    initial_angles = angles_list_to_numpy(angles_ret)
+    output_angles = fmin(func_for_fmin, initial_angles, args=(arm, target))
+    angles_ret = angles_numpy_to_list(output_angles)
+
     return angles_ret
+
 
